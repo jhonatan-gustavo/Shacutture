@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-crema font-sans text-negro antialiased;
+  }
+
+  ::selection {
+    @apply bg-vino text-crema;
+  }
+}
+
+@layer components {
+  .btn-brutal {
+    @apply inline-flex items-center justify-center gap-2 border-[3px] border-negro bg-carmesi px-5 py-2.5 font-heading text-xs font-extrabold uppercase tracking-[0.14em] text-blanco shadow-brutal transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-negro;
+  }
+
+  .btn-brutal:hover {
+    @apply -translate-x-0.5 -translate-y-0.5 shadow-brutal-lg;
+  }
+
+  .btn-brutal:active {
+    @apply translate-x-1 translate-y-1 shadow-none;
+  }
+
+  .input-brutal {
+    @apply w-full border-[3px] border-negro bg-blanco px-4 py-3 font-sans text-sm font-semibold text-negro shadow-brutal-sm outline-none transition focus:bg-crema focus:shadow-brutal;
+  }
+
+  .card-brutal {
+    @apply border-[3px] border-negro bg-blanco shadow-brutal;
+  }
+
+  .badge-brutal {
+    @apply inline-flex items-center border-[3px] border-negro bg-crema px-2.5 py-1 font-heading text-[10px] font-extrabold uppercase tracking-[0.14em] text-negro shadow-brutal-sm;
+  }
+}
