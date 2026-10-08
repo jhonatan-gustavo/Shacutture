@@ -1,64 +1,33 @@
 import { useMemo, useState } from 'react'
-import MosaicRevealGrid, {
-  type MosaicItem,
-  type MosaicLook,
-} from '../components/collections/MosaicRevealGrid'
+import MosaicRevealGrid, { type MosaicItem } from '../components/collections/MosaicRevealGrid'
+import { PRODUCTS, type Product } from '../data/products'
 import { cn } from '../lib/utils'
 
-type Product = {
-  id: string
-  n: string
-  name: string
-  category: 'Streetwear' | 'Hoodies' | 'Accesorios'
-  price: number
-  limited: boolean
-  soldOut: boolean
-  isNew: boolean
+type Category = 'Streetwear' | 'Hoodies' | 'Accesorios'
+
+const CATEGORIES: Record<string, Category> = {
+  'the-feeling-hoodie': 'Hoodies',
+  'emotion-tee': 'Streetwear',
+  'passion-bomber-jacket': 'Streetwear',
+  'raw-statement-pants': 'Streetwear',
 }
 
-const PRODUCTS: Product[] = [
-  { id: 'void-tee', n: '01', name: 'Playera VOID Oversize', category: 'Streetwear', price: 749, limited: false, soldOut: false, isNew: true },
-  { id: 'borgia-hoodie', n: '02', name: 'Hoodie BORGIA Heavy', category: 'Hoodies', price: 1299, limited: true, soldOut: false, isNew: true },
-  { id: 'carmesi-suda', n: '03', name: 'Sudadera CARMESÍ 450g', category: 'Hoodies', price: 1199, limited: false, soldOut: false, isNew: false },
-  { id: 'tactic-cargo', n: '04', name: 'Cargo TACTIC Wide', category: 'Streetwear', price: 1499, limited: true, soldOut: false, isNew: true },
-  { id: 'shac-gorra', n: '05', name: 'Gorra SHAC Rutera', category: 'Accesorios', price: 499, limited: false, soldOut: false, isNew: false },
-  { id: 'manifiesto-tee', n: '06', name: 'Camiseta MANIFIESTO Print', category: 'Streetwear', price: 649, limited: false, soldOut: true, isNew: false },
-  { id: 'null-hoodie', n: '07', name: 'Hoodie NULL Zen', category: 'Hoodies', price: 1399, limited: false, soldOut: false, isNew: false },
-  { id: 'manifiesto-tote', n: '08', name: 'Tote MANIFIESTO', category: 'Accesorios', price: 399, limited: true, soldOut: false, isNew: false },
-  { id: 'utility-vest', n: '09', name: 'Chaleco UTILITY Vest', category: 'Streetwear', price: 1899, limited: true, soldOut: true, isNew: false },
-]
-
-const LOOKS: MosaicLook[] = [
-  { id: 'look-01', label: 'Editorial 01 — CDMX Streets', headline: 'Night', brush: 'shift', theme: 'wine' },
-  { id: 'look-02', label: 'Editorial 02 — Studio Raw', headline: 'Raw', brush: 'cut', theme: 'ink' },
-  { id: 'look-03', label: 'Editorial 03 — Drop 001', headline: 'Wear', brush: 'it loud', theme: 'red' },
-]
-
 const FILTERS = ['TODO', 'STREETWEAR', 'HOODIES', 'DROPS LIMITADOS', 'ACCESORIOS'] as const
+
+const isLimited = (product: Product) => /LIMITADA|PIEZAS/i.test(product.badge ?? '')
 
 const buildItems = (filter: string): MosaicItem[] => {
   const filtered = PRODUCTS.filter((product) => {
     if (filter === 'TODO') return true
-    if (filter === 'DROPS LIMITADOS') return product.limited
-    return product.category.toUpperCase() === filter
+    if (filter === 'DROPS LIMITADOS') return isLimited(product)
+    return CATEGORIES[product.id] === filter
   })
 
   const items: MosaicItem[] = []
-  let lookIndex = 0
-
-  filtered.forEach((product, index) => {
-    items.push({ kind: 'product', ...product })
-    if ((index + 1) % 3 === 0 && lookIndex < LOOKS.length) {
-      items.push({ kind: 'look', ...LOOKS[lookIndex] })
-      lookIndex += 1
-    }
+  filtered.forEach((product) => {
+    items.push({ kind: 'product', id: product.id, product })
+    items.push({ kind: 'look', id: `${product.id}-look`, product })
   })
-
-  while (lookIndex < LOOKS.length) {
-    items.push({ kind: 'look', ...LOOKS[lookIndex] })
-    lookIndex += 1
-  }
-
   return items
 }
 
@@ -108,7 +77,23 @@ export default function CollectionsPage() {
       </div>
 
       <div className="mt-10">
-        <MosaicRevealGrid items={items} />
+        {items.length > 0 ? (
+          <MosaicRevealGrid items={items} />
+        ) : (
+          <div className="border-[3px] border-negro bg-blanco p-10 text-center shadow-brutal">
+            <p className="font-brush text-3xl text-vino">aún no hay nada aquí</p>
+            <p className="mt-2 text-sm font-medium text-negro/60">
+              El filtro «{filter}» no tiene piezas en el Drop 001 — sigue explorando.
+            </p>
+            <button
+              type="button"
+              onClick={() => setFilter('TODO')}
+              className="btn-brutal mt-5 bg-vino"
+            >
+              Ver todo
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )

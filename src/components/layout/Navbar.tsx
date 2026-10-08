@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Heart, Menu, ShoppingBag, X, type LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { logoUrl } from '../../lib/assets'
 import { selectCount, useCartStore } from '../../store/useCartStore'
 
 type NavItem = {
@@ -40,9 +41,14 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b-[3px] border-negro bg-crema shadow-[0_5px_0px_#0D0D0D]">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 md:h-20 md:px-6">
-        <NavLink to="/" className="group flex items-baseline" aria-label="Shacutture — inicio">
-          <span className="font-display text-xl uppercase leading-none tracking-tight text-negro transition-transform duration-150 group-hover:-rotate-2 md:text-2xl">
-            Sha
+        <NavLink to="/" className="group flex items-center gap-1" aria-label="Shacutture — inicio">
+          <img
+            src={logoUrl}
+            alt=""
+            className="h-7 w-7 border-2 border-negro object-cover transition-transform duration-150 group-hover:-rotate-2 md:h-8 md:w-8"
+          />
+          <span className="font-display text-xl uppercase leading-none tracking-tight text-negro md:text-2xl">
+            ha
           </span>
           <span className="font-brush text-xl leading-none text-vino md:text-2xl">cut</span>
           <span className="font-display text-xl uppercase leading-none tracking-tight text-negro md:text-2xl">

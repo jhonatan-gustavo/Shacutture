@@ -1,31 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Flame, Heart, Plus, Shirt } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Check, Heart, Plus } from 'lucide-react'
+import type { Product } from '../../data/products'
 import { useCartStore } from '../../store/useCartStore'
 import { cn, formatPrice } from '../../lib/utils'
 import { gsap } from '../../lib/gsap'
 
-export type MosaicProduct = {
-  id: string
-  n: string
-  name: string
-  category: 'Streetwear' | 'Hoodies' | 'Accesorios'
-  price: number
-  limited: boolean
-  soldOut: boolean
-  isNew: boolean
-}
-
-export type MosaicLook = {
-  id: string
-  label: string
-  headline: string
-  brush: string
-  theme: 'wine' | 'ink' | 'red'
-}
-
 export type MosaicItem =
-  | ({ kind: 'product' } & MosaicProduct)
-  | ({ kind: 'look' } & MosaicLook)
+  | { kind: 'product'; id: string; product: Product }
+  | { kind: 'look'; id: string; product: Product }
 
 const SPANS = [
   'lg:col-span-2 lg:row-span-2',
@@ -42,49 +25,9 @@ const SPANS = [
   'lg:row-span-1',
 ]
 
-const CARD_THEMES = {
-  Streetwear: {
-    card: 'bg-blanco text-negro',
-    thumb: 'bg-crema',
-    number: 'text-vino/20',
-    divider: 'border-b-[3px] border-negro',
-  },
-  Hoodies: {
-    card: 'bg-negro text-crema',
-    thumb: 'bg-[#1A1A1A]',
-    number: 'text-carmesi/25',
-    divider: 'border-b-[3px] border-crema/25',
-  },
-  Accesorios: {
-    card: 'bg-vino text-crema',
-    thumb: 'bg-vino-deep',
-    number: 'text-crema/15',
-    divider: 'border-b-[3px] border-crema/25',
-  },
-} as const
+const INFO_THEMES = ['bg-blanco text-negro', 'bg-negro text-crema', 'bg-vino text-crema']
 
-const LOOK_THEMES = {
-  wine: {
-    card: 'bg-vino text-crema',
-    pattern: 'radial-gradient(rgba(244,240,234,0.28) 1.5px, transparent 1.5px)',
-    size: '16px 16px',
-    accent: 'text-carmesi',
-  },
-  ink: {
-    card: 'bg-negro text-crema',
-    pattern: 'repeating-linear-gradient(45deg, #C81D25 0 10px, transparent 10px 30px)',
-    size: 'auto',
-    accent: 'text-carmesi',
-  },
-  red: {
-    card: 'bg-carmesi text-blanco',
-    pattern: 'repeating-linear-gradient(-45deg, rgba(13,13,13,0.35) 0 8px, transparent 8px 26px)',
-    size: 'auto',
-    accent: 'text-negro',
-  },
-} as const
-
-function ProductCell({ product }: { product: MosaicProduct }) {
+function ProductCell({ product, index }: { product: Product; index: number }) {
   const liked = useCartStore((s) => s.wishlist.includes(product.id))
   const toggleWishlist = useCartStore((s) => s.toggleWishlist)
   const addItem = useCartStore((s) => s.addItem)
@@ -101,9 +44,6 @@ function ProductCell({ product }: { product: MosaicProduct }) {
     [],
   )
 
-  const theme = CARD_THEMES[product.category]
-  const Icon = product.category === 'Hoodies' ? Flame : Shirt
-
   const handleLike = () => {
     toggleWishlist(product.id)
     setPop(true)
@@ -112,68 +52,52 @@ function ProductCell({ product }: { product: MosaicProduct }) {
   }
 
   const handleAdd = () => {
-    if (product.soldOut) return
-    addItem({ id: product.id, name: product.name, price: product.price, size: 'M' })
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      size: product.sizes.includes('M') ? 'M' : product.sizes[0],
+    })
     setAdded(true)
     window.clearTimeout(addTimer.current)
     addTimer.current = window.setTimeout(() => setAdded(false), 1400)
   }
 
   return (
-    <div className="mosaic-inner flex h-full w-full flex-col">
-      <div
-        className={cn(
-          'relative flex min-h-[130px] flex-1 items-center justify-center overflow-hidden',
-          theme.thumb,
-          theme.divider,
-        )}
+    <div
+      className={cn(
+        'mosaic-inner flex h-full w-full flex-col',
+        INFO_THEMES[index % INFO_THEMES.length],
+      )}
+    >
+      <Link
+        to={`/producto/${product.id}`}
+        className="group/img relative block min-h-[130px] flex-1 overflow-hidden border-b-[3px] border-negro"
+        aria-label={`Ver ${product.name}`}
       >
-        <span
-          className={cn(
-            'font-display text-[6.5rem] leading-none tracking-tighter',
-            theme.number,
-          )}
-          aria-hidden="true"
-        >
-          {product.n}
-        </span>
-        <Icon
-          className={cn(
-            'absolute bottom-3 right-3 h-7 w-7 opacity-50',
-            product.soldOut && 'opacity-25',
-          )}
-          aria-hidden="true"
+        <img
+          src={product.images.front}
+          alt={product.name}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover/img:scale-105"
         />
-        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-          {product.soldOut ? (
-            <span className="badge-brutal bg-negro text-crema">Sold Out</span>
-          ) : product.limited ? (
-            <span className="badge-brutal bg-carmesi text-blanco">Edición limitada</span>
-          ) : product.isNew ? (
-            <span className="badge-brutal bg-carmesi text-blanco">Nuevo</span>
-          ) : null}
-        </div>
-      </div>
+        {product.badge ? (
+          <span className="badge-brutal absolute left-3 top-3 z-10 bg-carmesi text-blanco">
+            {product.badge}
+          </span>
+        ) : null}
+      </Link>
 
-      <div className="flex flex-col gap-1.5 p-4">
-        <span className="font-heading text-[10px] font-extrabold uppercase tracking-[0.18em] opacity-60">
-          {product.category}
+      <div className="flex flex-col gap-1 p-3.5">
+        <span className="line-clamp-1 font-heading text-[10px] font-extrabold uppercase tracking-[0.16em] opacity-60">
+          {product.subtitle}
         </span>
-        <h3
-          className={cn(
-            'font-display text-sm uppercase leading-tight tracking-tight line-clamp-2',
-            product.soldOut && 'opacity-50 line-through',
-          )}
-        >
-          {product.name}
+        <h3 className="line-clamp-1 font-display text-sm uppercase leading-tight tracking-tight">
+          <Link to={`/producto/${product.id}`} className="transition hover:text-carmesi">
+            {product.name}
+          </Link>
         </h3>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <span
-            className={cn(
-              'font-heading text-base font-extrabold',
-              product.soldOut && 'opacity-50 line-through',
-            )}
-          >
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <span className="font-heading text-sm font-extrabold">
             {formatPrice(product.price)}
           </span>
           <div className="flex items-center gap-2">
@@ -183,7 +107,7 @@ function ProductCell({ product }: { product: MosaicProduct }) {
               aria-label={liked ? 'Quitar de favoritos' : 'Añadir a favoritos'}
               aria-pressed={liked}
               className={cn(
-                'grid h-10 w-10 place-items-center border-[3px] border-negro shadow-brutal-sm transition-all duration-150 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none',
+                'grid h-9 w-9 place-items-center border-[3px] border-negro shadow-brutal-sm transition-all duration-150 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none',
                 liked ? 'bg-carmesi text-blanco' : 'bg-blanco text-negro hover:bg-crema',
                 pop && 'animate-heart-pop',
               )}
@@ -193,14 +117,9 @@ function ProductCell({ product }: { product: MosaicProduct }) {
             <button
               type="button"
               onClick={handleAdd}
-              disabled={product.soldOut}
               className={cn(
                 'btn-brutal px-3 py-2 text-[10px]',
-                product.soldOut
-                  ? 'cursor-not-allowed bg-negro/40 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none'
-                  : added
-                    ? 'bg-negro'
-                    : 'bg-vino',
+                added ? 'bg-negro' : 'bg-vino',
               )}
             >
               {added ? (
@@ -208,8 +127,6 @@ function ProductCell({ product }: { product: MosaicProduct }) {
                   <Check className="h-3.5 w-3.5" />
                   Añadido
                 </>
-              ) : product.soldOut ? (
-                'Agotado'
               ) : (
                 <>
                   <Plus className="h-3.5 w-3.5" />
@@ -224,31 +141,29 @@ function ProductCell({ product }: { product: MosaicProduct }) {
   )
 }
 
-function LookCell({ look }: { look: MosaicLook }) {
-  const theme = LOOK_THEMES[look.theme]
-
+function LookCell({ product }: { product: Product }) {
   return (
-    <div
-      className={cn('mosaic-inner relative flex h-full w-full flex-col justify-between overflow-hidden p-5', theme.card)}
+    <Link
+      to={`/producto/${product.id}`}
+      className="mosaic-inner relative block h-full min-h-[240px] w-full overflow-hidden"
+      aria-label={`Lookbook de ${product.name}`}
     >
+      <img
+        src={product.images.lookbook}
+        alt={`Lookbook de ${product.name}`}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       <div
-        className="pointer-events-none absolute inset-0"
-        style={{ backgroundImage: theme.pattern, backgroundSize: theme.size }}
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-negro/75 via-negro/10 to-transparent"
         aria-hidden="true"
       />
-      <span className="badge-brutal relative w-fit bg-crema text-negro">Lookbook</span>
-      <div className="relative">
-        <p className="font-display text-4xl uppercase leading-none tracking-tighter md:text-5xl">
-          {look.headline}
-        </p>
-        <p className={cn('mt-2 font-brush text-2xl lowercase md:text-3xl', theme.accent)}>
-          {look.brush}
-        </p>
-      </div>
-      <span className="relative font-heading text-[10px] font-extrabold uppercase tracking-[0.2em] opacity-70">
-        {look.label}
+      <span className="badge-brutal absolute left-3 top-3 z-10 bg-crema text-negro">
+        Lookbook
       </span>
-    </div>
+      <span className="absolute bottom-4 left-4 right-4 font-brush text-2xl leading-tight text-crema">
+        {product.name}
+      </span>
+    </Link>
   )
 }
 
@@ -301,41 +216,24 @@ export default function MosaicRevealGrid({ items }: { items: MosaicItem[] }) {
       ref={gridRef}
       className="grid auto-rows-auto grid-flow-dense grid-cols-1 gap-6 sm:auto-rows-[260px] sm:grid-cols-2 lg:grid-cols-4"
     >
-      {items.map((item, index) => {
-        if (item.kind === 'look') {
-          return (
-            <div
-              key={item.id}
-              className={cn(
-                'mosaic-cell relative min-h-[240px] overflow-hidden border-[3px] border-negro shadow-brutal',
-                SPANS[index % SPANS.length],
-                LOOK_THEMES[item.theme].card,
-              )}
-            >
-              <LookCell look={item} />
-              <div className="mosaic-curtain pointer-events-none absolute inset-0 z-10 grid place-items-center bg-vino">
-                <span className="font-brush text-3xl text-crema/90">shacutture</span>
-              </div>
-            </div>
-          )
-        }
-
-        return (
-          <div
-            key={item.id}
-            className={cn(
-              'mosaic-cell relative min-h-[240px] overflow-hidden border-[3px] border-negro shadow-brutal',
-              SPANS[index % SPANS.length],
-              CARD_THEMES[item.category].card,
-            )}
-          >
-            <ProductCell product={item} />
-            <div className="mosaic-curtain pointer-events-none absolute inset-0 z-10 grid place-items-center bg-vino">
-              <span className="font-brush text-3xl text-crema/90">shacutture</span>
-            </div>
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          className={cn(
+            'mosaic-cell relative min-h-[240px] overflow-hidden border-[3px] border-negro bg-blanco shadow-brutal',
+            SPANS[index % SPANS.length],
+          )}
+        >
+          {item.kind === 'product' ? (
+            <ProductCell product={item.product} index={index} />
+          ) : (
+            <LookCell product={item.product} />
+          )}
+          <div className="mosaic-curtain pointer-events-none absolute inset-0 z-10 grid place-items-center bg-vino">
+            <span className="font-brush text-3xl text-crema/90">shacutture</span>
           </div>
-        )
-      })}
+        </div>
+      ))}
     </div>
   )
 }

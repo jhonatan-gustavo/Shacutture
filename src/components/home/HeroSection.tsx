@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { gsap } from '../../lib/gsap'
+import { logoUrl } from '../../lib/assets'
 
 function TeeGraphic() {
   return (
@@ -119,7 +120,15 @@ export default function HeroSection() {
 
           <div className="hero-fade flex w-full items-center gap-3 border-t-[3px] border-negro pt-5 font-heading text-[11px] font-extrabold uppercase tracking-[0.2em] text-negro/60">
             <Sparkles className="h-4 w-4 shrink-0 text-carmesi" />
-            <span>Shacutture — The Art of Wearing What You Feel</span>
+            <span className="flex items-center gap-1.5">
+              <span className="sr-only">S</span>
+              <img
+                src={logoUrl}
+                alt=""
+                className="h-[18px] w-[18px] shrink-0 border border-negro object-cover"
+              />
+              hacutture — The Art of Wearing What You Feel
+            </span>
           </div>
         </div>
 
@@ -127,7 +136,15 @@ export default function HeroSection() {
           <div className="rotate-3 border-[3px] border-negro bg-vino shadow-brutal-xl">
             <div className="flex items-center justify-between border-b-[3px] border-negro bg-crema px-4 py-2 font-heading text-[11px] font-extrabold uppercase tracking-[0.16em] text-negro">
               <span>Drop 001</span>
-              <span>Shacutture</span>
+              <span className="flex items-center gap-1.5">
+                <span className="sr-only">S</span>
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="h-5 w-5 shrink-0 border-2 border-negro object-cover"
+                />
+                hacutture
+              </span>
             </div>
             <div className="grid place-items-center px-6 py-10">
               <TeeGraphic />

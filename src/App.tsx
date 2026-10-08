@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage'
 import CollectionsPage from './pages/CollectionsPage'
 import WishlistPage from './pages/WishlistPage'
 import CheckoutPage from './pages/CheckoutPage'
+import ProductDetailPage from './pages/ProductDetailPage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -30,6 +31,7 @@ function App() {
             <Route path="/colecciones" element={<CollectionsPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/producto/:id" element={<ProductDetailPage />} />
           </Routes>
         </main>
         <Footer />
